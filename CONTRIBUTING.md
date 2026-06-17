@@ -161,22 +161,21 @@ feat(furniture): 가구 파손 판정 + 점수 차감
 - 노드 정리: 선 꼬임 금지, Reroute 적극 활용
 - 100노드 이상이 되면 C++ 분리 고려
 
-### 에셋 네이밍
+### 에셋 네이밍 (팀 표준 — 필수)
 
-| 종류 | 규칙 |
-|---|---|
-| Static Mesh | `SM_<Name>` (예: `SM_Sofa`, `SM_TV`) |
-| Skeletal Mesh | `SK_<Name>` |
-| Material | `M_<Name>` |
-| Material Instance | `MI_<Name>` |
-| Texture | `T_<Name>_<Type>` (예: `T_Sofa_D`, `T_Sofa_N`) |
-| Anim Montage | `AM_<Name>` |
-| Anim Sequence | `AS_<Name>` |
-| Sound Wave | `SW_<Name>` |
-| Sound Cue | `SC_<Name>` |
-| DataAsset | `DA_<Name>` |
-| DataTable | `DT_<Name>` |
-| Niagara System | `NS_<Name>` |
+전체 접두사 규칙·예시는 **[Docs/team-rules.md](Docs/team-rules.md)** 참고. 요약:
+
+| 접두사 | 종류 | 예시 |
+|---|---|---|
+| `SM_` | Static Mesh | `SM_Sofa_01` |
+| `SK_` | Skeletal Mesh | `SK_Mover_Default` |
+| `T_` | Texture | `T_Sofa_D` (D=Diffuse) |
+| `M_` / `MI_` | Material / Instance | `M_Cardboard` / `MI_Cardboard_Worn` |
+| `BP_` | Blueprint | `BP_Furniture_Sofa` |
+| `WBP_` | Widget Blueprint | `WBP_InGameHUD` |
+| `DA_` / `DT_` | Data Asset / Table | `DA_FurnitureConfig` / `DT_FurnitureStats` |
+| `ABP_` | Animation Blueprint | `ABP_Mover_Locomotion` |
+| `AM_` | Animation Montage | `AM_Grab` |
 
 ---
 
