@@ -4,19 +4,24 @@
 
 ---
 
-## 1. 브랜치 전략 — GitHub Flow
+## 1. 브랜치 전략 — Git Flow (develop 완충)
 
 ```
-main ────●────●────●────●────●   (항상 빌드 가능한 상태)
-   │     │    │    │    │
-   │  feat/*  feat/* feat/* ...  (짧은 생명주기, PR로 병합)
+main    ──●───────────────────●──   (제출/발표용 안정판 — release 시점에만 머지)
+           ↑ release            ↑
+develop ──●──●──●──●──●──●──────●──   (기본 브랜치 · 통합 완충 — feat가 모이는 곳)
+           │   │   │   │
+           │ feat/* feat/* ...       (짧은 생명주기 · develop에서 분기, develop으로 PR)
 ```
 
-- **`main`** — 항상 빌드 성공 + 기능 검증 완료된 상태 유지. **직접 커밋 금지**
-- **`feat/*`** — 새 기능. 하루~3일 내 완료 후 PR
-- **`fix/*`** — 버그 수정
-- **`refactor/*`** — 동작 변경 없는 구조 개선
-- **`chore/*`** — 빌드·설정·의존성
+`develop`이 feat와 main 사이의 **완충 지대**다. 매일의 통합·머지·QA는 develop에서 일어나고, main은 발표·제출처럼 안정 시점에만 develop을 받는다. → main이 깨질 위험을 develop이 흡수.
+
+- **`main`** — 제출/발표용 안정판. **release 시점에만 develop → main 머지.** 직접 커밋·push 금지
+- **`develop`** — **기본 브랜치.** 모든 feat가 모이는 통합 완충 지대. 여기서 멀티 QA 후 main으로 올림
+- **`feat/*`** — 새 기능. **develop에서 분기, develop으로 PR.** 하루~3일 내 완료
+- **`fix/*`** — 버그 수정 (develop 기준)
+- **`refactor/*`** — 동작 변경 없는 구조 개선 (develop 기준)
+- **`chore/*`** — 빌드·설정·의존성 (develop 기준)
 
 ### 브랜치 네이밍
 
@@ -90,7 +95,7 @@ docs(readme): 코어 루프 흐름도 업데이트
 ### PR 만들 때
 
 1. **로컬에서 빌드 성공 확인** 후 push
-2. GitHub에서 PR 생성 → 템플릿 채우기 (자동)
+2. GitHub에서 PR 생성 → **base 브랜치 = `develop`** 확인(기본값) → 템플릿 채우기 (자동)
 3. **리뷰어 1명 이상 지정** (담당 시스템에 가까운 팀원)
 4. 관련 Issue 있으면 `Closes #N` 본문에 명시
 
@@ -115,13 +120,14 @@ feat(furniture): 가구 파손 판정 + 점수 차감
 
 | 상황 | 전략 |
 |---|---|
-| `feat/*` → `main` | **Squash Merge** (여러 커밋을 1개로 압축, main 히스토리 깔끔) |
-| `fix/*` → `main` | Squash Merge |
-| 큰 기능 (3일 이상 작업) | **Merge Commit** 가능 (병합 시점 명시) |
+| `feat/*` → `develop` | **Squash Merge** (여러 커밋을 1개로 압축, develop 히스토리 깔끔) |
+| `fix/*` → `develop` | Squash Merge |
+| `develop` → `main` | **Merge Commit** (릴리스 — 발표·제출 등 안정 시점) |
+| 큰 기능 (3일 이상 작업) | Merge Commit 가능 (병합 시점 명시) |
 
 **금지**:
-- `main` 직접 커밋·push
-- Force push (특히 main)
+- `main` · `develop` 직접 커밋·push (둘 다 PR로만)
+- Force push (특히 main·develop)
 - 자기 PR 리뷰 없이 merge
 
 ---
