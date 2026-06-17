@@ -163,19 +163,8 @@ feat(furniture): 가구 파손 판정 + 점수 차감
 
 ### 에셋 네이밍 (팀 표준 — 필수)
 
-전체 접두사 규칙·예시는 **[Docs/team-rules.md](Docs/team-rules.md)** 참고. 요약:
-
-| 접두사 | 종류 | 예시 |
-|---|---|---|
-| `SM_` | Static Mesh | `SM_Sofa_01` |
-| `SK_` | Skeletal Mesh | `SK_Mover_Default` |
-| `T_` | Texture | `T_Sofa_D` (D=Diffuse) |
-| `M_` / `MI_` | Material / Instance | `M_Cardboard` / `MI_Cardboard_Worn` |
-| `BP_` | Blueprint | `BP_Furniture_Sofa` |
-| `WBP_` | Widget Blueprint | `WBP_InGameHUD` |
-| `DA_` / `DT_` | Data Asset / Table | `DA_FurnitureConfig` / `DT_FurnitureStats` |
-| `ABP_` | Animation Blueprint | `ABP_Mover_Locomotion` |
-| `AM_` | Animation Montage | `AM_Grab` |
+에셋 접두사(`SM_`/`SK_`/`T_`/`M_`/`MI_`/`BP_`/`WBP_`/`DA_`/`DT_`/`ABP_`/`AM_`)와 Content 폴더 규칙은
+**[Docs/team-rules.md](Docs/team-rules.md)** 가 기준 문서다. (코드 클래스 접두사는 위 C++ 항목 참고)
 
 ---
 
@@ -195,7 +184,7 @@ feat(furniture): 가구 파손 판정 + 점수 차감
 
 - `Binaries/`, `Intermediate/`, `DerivedDataCache/`, `Saved/` 금지
 - IDE 찌꺼기 (`.vs/`, `.idea/`, `*.DotSettings.user`) 금지
-- 외부 마켓팩은 `.gitignore` 제외 — 각자 로컬에서 FAB 다운로드 후 `Content/TeamCarry/` 네임스페이스로 필요한 것만 마이그레이트
+- 외부 마켓팩(FAB) 처리·Content 네임스페이스 규칙은 [Docs/team-rules.md](Docs/team-rules.md) 참고
 
 ### LFS
 - 현재 **미사용**. 단, 개별 `.uasset`이 100MB 초과하면 LFS 도입 검토 필요 (가구 메시·텍스처가 커질 수 있어 초기 모니터링)
