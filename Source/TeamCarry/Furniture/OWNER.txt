@@ -1,6 +1,7 @@
 폴더: Furniture
-담당: 가구 Prop 역할 (미정 — 팀 합의 후 기입)
+담당: 홍민기 (가구 Prop)
 용도: 게임 정체성인 "가구 옮기기" 핵심 시스템 (Core 필수)
+설계: DataTable 기반 가구 클래스, 내구도 상태 변수 관리, 파손/파괴·예외 처리
 주요 파일 예정:
   - FurnitureActor.h/.cpp           (가구 본체, 물리/내구도)
   - FurnitureGrabSystem.h/.cpp      (다인 잡기, 합산 이동 벡터 계산)

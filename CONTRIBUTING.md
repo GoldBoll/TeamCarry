@@ -128,16 +128,17 @@ feat(furniture): 가구 파손 판정 + 점수 차감
 
 ## 5. 담당 영역 (파일/폴더 소유)
 
-충돌 회피를 위해 **각자 주로 작업하는 영역**을 분명히 정합니다. 각 폴더의 `OWNER.txt` 참고. (담당자명은 팀 합의 후 기입)
+충돌 회피를 위해 **각자 주로 작업하는 영역**을 분명히 정합니다. 각 폴더의 `OWNER.txt` 참고.
 
-| 역할 | 주 작업 영역 |
-|---|---|
-| GameMode / Core | `Source/TeamCarry/Core/`, `Config/` |
-| 캐릭터 (Player) | `Source/TeamCarry/Player/`, `Content/Player/` |
-| 가구 Prop (Furniture) | `Source/TeamCarry/Furniture/`, `Content/Furniture/` |
-| 네트워크 (Net) | `Source/TeamCarry/Network/` (복제·RPC) |
-| 레벨 디자인 (Level) | `Source/TeamCarry/Level/`, `Content/Maps/` |
-| UI | `Source/TeamCarry/UI/`, `Content/UI/` |
+| 역할 | 담당 | 주 작업 영역 |
+|---|---|---|
+| GameMode / Core | 윤준학 | `Source/TeamCarry/Core/`, `Config/` |
+| 캐릭터 (Player) | 김민성 | `Source/TeamCarry/Player/`, `Content/Player/` |
+| 가구 Prop (Furniture) | 홍민기 | `Source/TeamCarry/Furniture/`, `Content/Furniture/` |
+| 레벨 디자인 (Level) | 이경환 | `Source/TeamCarry/Level/`, `Content/Maps/` (강도 AI·방해물 포함) |
+| UI | 조민기 | `Source/TeamCarry/UI/`, `Content/UI/` |
+| 네트워크 + 물리 | 각자 (분산) | `Source/TeamCarry/Network/` — 각 도메인이 자기 복제 책임 |
+| 통합·빌드 + 게임필 | 신장식 | 전역 — 세션 골격·표준·빌드 자동화·통합 QA·교차 검증 |
 
 > 교차 작업이 필요하면 **사전 공유** (디스코드·카톡). 같은 파일에 2명 이상 동시 수정 금지.
 > 멀티플레이 특성상 가구·플레이어 상태는 Net 담당과 반드시 협의 후 복제 변수 추가.

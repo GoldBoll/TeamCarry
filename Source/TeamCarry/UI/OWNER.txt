@@ -1,6 +1,6 @@
 폴더: UI
-담당: UI 역할 (미정 — 팀 합의 후 기입)
-용도: 메인 메뉴, 캐릭터 선택, 인게임 HUD, 최종 결과 화면
+담당: 조민기 (UI)
+용도: 전반 게임 위젯, 인게임 정보(시간·점수), 결과창
 주요 파일 예정:
   - WBP_MainMenu / WBP_CharacterSelect / WBP_StageSelect
   - WBP_InGameHUD          (남은 가구 수, 가구 내구도, 필요/현재 인원)

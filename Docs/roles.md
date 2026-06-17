@@ -1,16 +1,18 @@
 # 역할 분담 — TeamCarry (Project A)
 
 기획서 역할(캐릭터 / 레벨 디자인 / 가구 Prop / 네트워크 / GameMode / UI) 기준.
-담당자명은 **팀 합의 후 기입**한다. 각 코드 폴더의 `OWNER.txt`와 짝을 이룬다.
+각 코드 폴더의 `OWNER.txt`와 짝을 이룬다.
 
-| 역할 | 담당자 | 코드 폴더 | 주 작업 |
+| 역할 | 담당자 | 코드 폴더 | 세부 |
 |---|---|---|---|
-| GameMode / Core | _미정_ | `Source/TeamCarry/Core/` | 게임모드·게임스테이트, 결과/점수 판정, 공용 인터페이스 |
-| 캐릭터 (Player) | _미정_ | `Source/TeamCarry/Player/` | 캐릭터, 이동, 상호작용(잡기) 입력 |
-| 가구 Prop (Furniture) | _미정_ | `Source/TeamCarry/Furniture/` | 가구 본체, 다인 잡기, 내구도·파손 |
-| 네트워크 (Net) | _미정_ | `Source/TeamCarry/Network/` | 복제·RPC, 서버 권위 동기화 |
-| 레벨 디자인 (Level) | _미정_ | `Source/TeamCarry/Level/` | 스테이지(여러 집), 스테이지 선택, 트럭 판정 |
-| UI | _미정_ | `Source/TeamCarry/UI/` | 메인메뉴·캐릭터선택·HUD·결과 |
+| 캐릭터 / 컨트롤 | 김민성 | `Source/TeamCarry/Player/` | 이동(WASD)·달리기(Shift)·점프(Space)·앉기(Ctrl)·상호작용(F), 모션·Attach 애니, [선택] 감정표현 애니 |
+| 레벨 디자인 | 이경환 | `Source/TeamCarry/Level/` | 스테이지 구현, 스테이지 선택 레벨, 환경·방해 구조물·문, 강도 AI |
+| 가구 Prop | 홍민기 | `Source/TeamCarry/Furniture/` | DataTable 기반 클래스 설계, 내구도 상태 변수 관리, 파손/파괴·예외 처리 |
+| GameMode | 윤준학 | `Source/TeamCarry/Core/` | 게임 흐름 제어, 점수 판정, 승패 조건 트리거 |
+| UI | 조민기 | `Source/TeamCarry/UI/` | 전반 게임 위젯, 인게임 정보(시간·점수), 결과창 |
+| 통합·빌드 + 게임필 (접착제·안전망) | 신장식 | (전역) | 멀티 세션 골격·프로젝트 표준·그레이박스 슬라이스(초반) → 게임필 툴킷·빌드 자동화(중반) → 통합·멀티 QA·교차 검증(후반) |
+| 네트워크 + 물리 (전 역할 분산) | 각자 | `Source/TeamCarry/Network/` | 가구 위치·물리 연산 동기화, 합산 이동 벡터 도출, 예외 처리 — 각 도메인 담당이 자기 복제 책임, 신장식이 통합 |
 
 > 분위기 통일: 레벨·캐릭터는 **카툰풍 아기자기**.
 > 교차 작업 시 디스코드 사전 공유, 같은 파일 동시 수정 금지.
+> 네트워크·물리는 단일 소유자가 아니라 **각 도메인에 분산** — 복제 변수 추가 시 신장식과 협의.

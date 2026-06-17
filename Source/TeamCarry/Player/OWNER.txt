@@ -1,6 +1,8 @@
 폴더: Player
-담당: 캐릭터 역할 (미정 — 팀 합의 후 기입)
-용도: 플레이어 캐릭터, 이동, 상호작용(가구 잡기) 입력 처리
+담당: 김민성 (캐릭터 / 컨트롤)
+용도: 플레이어 캐릭터, 이동·상호작용 입력, 모션/Attach 애니
+입력 매핑: 이동(WASD)·달리기(Shift)·점프(Space)·앉기(Ctrl)·상호작용(F)
+          [선택] 감정표현 애니
 주요 파일 예정:
   - TeamCarryCharacter.h/.cpp       (Pawn, 이동, 카메라)
   - TeamCarryPlayerController.h/.cpp
