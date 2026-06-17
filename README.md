@@ -76,6 +76,25 @@ Source/TeamCarry/
 
 ---
 
+## 브랜치 / 협업
+
+전략: **GitHub Flow** — 항상 배포 가능한 `main` + 짧은 생명주기의 `feat/*`. 상세 규칙(커밋·PR·머지)은 [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+| 브랜치 | 담당 | 도메인 |
+|---|---|---|
+| `main` | — | 항상 빌드 가능한 안정판 (직접 push 금지) |
+| `feat/core-gamemode-setup` | 윤준학 | Core / GameMode |
+| `feat/player-character-setup` | 김민성 | Player |
+| `feat/furniture-datatable-setup` | 홍민기 | Furniture |
+| `feat/level-stage-greybox` | 이경환 | Level |
+| `feat/ui-hud-setup` | 조민기 | UI |
+| `feat/net-session-skeleton` | 신장식 | Network 세션 골격 |
+
+> 각자 자기 `feat/*`에서 작업 → PR(리뷰 1명↑) → `main`으로 Squash Merge.
+> 담당자 전체 표는 [Docs/roles.md](Docs/roles.md), 폴더별 상세는 각 `OWNER.txt`.
+
+---
+
 ## 기술 스택
 
 | 항목 | 내용 |
