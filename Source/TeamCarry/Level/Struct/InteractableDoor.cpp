@@ -16,6 +16,7 @@ AInteractableDoor::AInteractableDoor()
 
 	DoorMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DoorMesh"));
 	DoorMesh->SetupAttachment(DoorRoot);
+	DoorMesh->SetRenderCustomDepth(false); // 외곽선 기본 OFF
 }
 
 void AInteractableDoor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -28,7 +29,7 @@ void AInteractableDoor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 void AInteractableDoor::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
-	DoorMesh->SetRelativeRotation(ClosedRotation); // 에디터 미리보기
+	DoorMesh->SetRelativeRotation(ClosedRotation);
 }
 
 void AInteractableDoor::BeginPlay()
@@ -38,28 +39,37 @@ void AInteractableDoor::BeginPlay()
 	bAnimating = false;
 }
 
-bool AInteractableDoor::CanInteract_Implementation(AActor*) const
+
+bool AInteractableDoor::CanInteract_Implementation(ATCPlayerCharacter* /*Player*/)
 {
 	return !bIsInteracting; // 애니메이션 중이면 전 클라 잠금
 }
 
-void AInteractableDoor::Interact_Implementation(AActor* Interactor)
+void AInteractableDoor::OnInteract_Implementation(ATCPlayerCharacter* /*Player*/)
 {
-	if (HasAuthority()) { HandleInteract(Interactor); }
+	// GrabComponent의 ServerTryInteract를 거쳐 서버에서 호출됨
+	if (HasAuthority())
+	{
+		HandleInteract();
+	}
 }
 
-FText AInteractableDoor::GetInteractText_Implementation() const
+void AInteractableDoor::OnFocus_Implementation()
 {
-	return bIsOpen ? NSLOCTEXT("Door", "Close", "닫기")
-		: NSLOCTEXT("Door", "Open", "열기");
+	DoorMesh->SetRenderCustomDepth(true);  // 외곽선 하이라이트 ON
 }
 
-void AInteractableDoor::HandleInteract(AActor*)
+void AInteractableDoor::OnUnfocus_Implementation()
+{
+	DoorMesh->SetRenderCustomDepth(false); // OFF
+}
+
+void AInteractableDoor::HandleInteract()
 {
 	if (!HasAuthority() || bIsInteracting) return;
 
-	bIsInteracting = true; 
-	bIsOpen = !bIsOpen;    
+	bIsInteracting = true; // 복제  전 클라 잠금
+	bIsOpen = !bIsOpen;    // 목표 토글  복제
 	StartAnimation();
 	ForceNetUpdate();
 }
@@ -67,7 +77,7 @@ void AInteractableDoor::HandleInteract(AActor*)
 void AInteractableDoor::StartAnimation() { bAnimating = true; }
 
 void AInteractableDoor::OnRep_IsOpen() { StartAnimation(); }
-void AInteractableDoor::OnRep_IsInteracting() { /* UI 프롬프트 갱신 훅 */ }
+void AInteractableDoor::OnRep_IsInteracting() { /* 잠금 상태 변화 훅 */ }
 
 void AInteractableDoor::Tick(float DeltaSeconds)
 {
@@ -84,9 +94,9 @@ void AInteractableDoor::Tick(float DeltaSeconds)
 		DoorMesh->SetRelativeRotation(Target);
 		bAnimating = false;
 
-		if (HasAuthority()) 
+		if (HasAuthority()) // 열림 판정은 서버 단독
 		{
-			bIsInteracting = false;
+			bIsInteracting = false; // 전 클라 잠금 해제
 			ForceNetUpdate();
 		}
 	}

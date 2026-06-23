@@ -4,13 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Core/InteractableInterface.h"
+#include "Player/Interface/TCInteractable.h"
 #include "InteractableDoor.generated.h"
 
 class UStaticMeshComponent;
+class ATCPlayerCharacter;
 
 UCLASS()
-class TEAMCARRY_API AInteractableDoor : public AActor, public IInteractableInterface
+class TEAMCARRY_API AInteractableDoor : public AActor, public ITCInteractable
 {
 	GENERATED_BODY()
 	
@@ -21,9 +22,10 @@ public:
 	virtual void OnConstruction(const FTransform& Transform) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	virtual bool  CanInteract_Implementation(AActor* Interactor) const override;
-	virtual void  Interact_Implementation(AActor* Interactor) override;
-	virtual FText GetInteractText_Implementation() const override;
+	virtual bool CanInteract_Implementation(ATCPlayerCharacter* Player) override;
+	virtual void OnFocus_Implementation() override;
+	virtual void OnUnfocus_Implementation() override;
+	virtual void OnInteract_Implementation(ATCPlayerCharacter* Player) override;
 
 protected:
 	virtual void BeginPlay() override;
@@ -57,6 +59,6 @@ private:
 	UFUNCTION() void OnRep_IsOpen();
 	UFUNCTION() void OnRep_IsInteracting();
 
-	void HandleInteract(AActor* Interactor);
+	void HandleInteract();
 	void StartAnimation();
 };
