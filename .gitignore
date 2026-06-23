@@ -11,6 +11,9 @@
 *.VC.opendb
 .vs/
 
+# JetBrains Rider / IntelliJ (개인 IDE 설정)
+.idea/
+
 # Visual Studio solution variants (UBT가 재생성)
 *.slnx
 
