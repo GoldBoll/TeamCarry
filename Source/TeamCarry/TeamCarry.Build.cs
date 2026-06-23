@@ -14,7 +14,7 @@ public class TeamCarry : ModuleRules
 
         PublicIncludePaths.AddRange(new string[] 
         {
-            "TeamCarry",
+            
         });
 
         // Uncomment if you are using Slate UI
