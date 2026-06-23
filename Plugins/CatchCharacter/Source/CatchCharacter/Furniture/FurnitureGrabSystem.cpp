@@ -13,13 +13,6 @@ UFurnitureGrabSystem::UFurnitureGrabSystem()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	SetIsReplicatedByDefault(true);
-
-	// 보간을 위한 작업
-	//const static float ActorNetUpdateFrequency = 100.f;
-	//SetNetUpdateFrequency(ActorNetUpdateFrequency);
-	//// 1초에 100번씩 액터 레플리케이션 시도
-	//NetUpdatePeriod = 1 / GetNetUpdateFrequency();
-	//// 주기 = 1 / 주파수
 }
 
 void UFurnitureGrabSystem::BeginPlay()
@@ -45,29 +38,24 @@ void UFurnitureGrabSystem::TickComponent(float DeltaTime, ELevelTick TickType, F
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// 서버에서 매틱마다 연산
+	// 서버에서 매틱마다 계산
 	if (GetOwner() && GetOwner()->HasAuthority() && GrabbedPlayers.Num() > 0)
 	{
-		// 가구가 이동을 하며 캐릭터에게 이동, 회전해야할 값을 보냄
+		// 가구를 이동시키며 캐릭터에게 이동, 회전해야할 값을 보냄
 		HandleMovement(DeltaTime);
 	}
-	// 클라에서 보간하여 부드럽게 움직이도록 함
+	// 클라이언트에서 보간하여 부드럽게 움직이도록 함
 	else if (GetOwner() && !GetOwner()->HasAuthority() && GrabbedPlayers.Num() > 0)
 	{
 		UpdateClientInterpolation(DeltaTime);
 	}
-	// 아무도 가구를 잡지 않고 방치된 상태일 때 (물리 낙하 등)
+	// 아무도 가구를 잡고 있지 않을 때 방치된 상태 (물리 동기화용)
 	else if (GetOwner() && !GetOwner()->HasAuthority() && GrabbedPlayers.Num() == 0)
 	{
 		// 출발점 갱신
 		PreviousClientLoc = GetOwner()->GetActorLocation();
 		PreviousClientRot = GetOwner()->GetActorRotation();
 	}
-
-	//for (ACharacter* Player : GrabbedPlayers)
-	//{
-	//	Player->AddActorWorldRotation(FRotator(0.0f, 1.f, 0.0f));
-	//}
 }
 
 void UFurnitureGrabSystem::Grab(ACharacter* Grabber, FVector height, UPrimitiveComponent* GrabberComponent)
@@ -76,13 +64,13 @@ void UFurnitureGrabSystem::Grab(ACharacter* Grabber, FVector height, UPrimitiveC
 	if (!GetOwner() || !GetOwner()->HasAuthority() || !Grabber || GrabbedPlayers.Contains(Grabber)) 
 		return;
 
-	// 필요 인원까지만 잡을 수 있도록 제한
+	// 필요 인원까지는 다 잡을 수있도록 제한
 	if (FurnitureStat && GrabbedPlayers.Num() >= FurnitureStat->GetRequiredPlayer())
 	{
 		return;
 	}
 
-	// 들어올려지는 가구는 물리를 끄고 일정높이 들어올려준다.
+	// 처음 잡는 사람이면 가구는 물리끄고 특정위치로 이동시켜준다.
 	if (GrabbedPlayers.Num() == 0 && FurnitureMesh)
 	{
 		FurnitureMesh->SetSimulatePhysics(false);
@@ -90,7 +78,7 @@ void UFurnitureGrabSystem::Grab(ACharacter* Grabber, FVector height, UPrimitiveC
 		GetOwner()->AddActorWorldOffset(height);
 	}
 
-	// 잡은 사람과 가구끼리 충돌을 제거시킨다.
+	// 서로 잡아끄는 가구끼리 충돌을 제거시킨다
 	Grabber->MoveIgnoreActorAdd(GetOwner());
 	if (FurnitureMesh && Grabber->GetCapsuleComponent())
 	{
@@ -103,13 +91,13 @@ void UFurnitureGrabSystem::Grab(ACharacter* Grabber, FVector height, UPrimitiveC
 
 	// 현재 잡은 플레이어의 위치를 기록
 	PreviousPlayerLocations.Add(Grabber, Grabber->GetActorLocation());
-	PreviousControlYaws.Add(Grabber, Grabber->GetControlRotation().Yaw);
+	PreviousPlayerYaws.Add(Grabber, Grabber->GetActorRotation().Yaw);
 
 	// 플레이어와 가구사이의 거리와 각도 저장
 	InitialVectors.Add(Grabber, GetOwner()->GetActorLocation() - Grabber->GetActorLocation());
-	InitialYaws.Add(Grabber, GetOwner()->GetActorRotation().Yaw);
+	InitialYaws.Add(Grabber, Grabber->GetActorRotation().Yaw);
 
-	// 가구 스텟에 현재 잡고있는 플레이어 반영
+	// 가구스텟에 현재 잡고있는 플레이어 반영
 	if (FurnitureStat)
 	{
 		FurnitureStat->UpdateGrabbedPlayers(GrabbedPlayers.Num());
@@ -132,7 +120,7 @@ void UFurnitureGrabSystem::Release(ACharacter* Grabber)
 
 	GrabbedPlayers.Remove(Grabber);
 	PreviousPlayerLocations.Remove(Grabber);
-	PreviousControlYaws.Remove(Grabber);
+	PreviousPlayerYaws.Remove(Grabber);
 	InitialVectors.Remove(Grabber);
 	InitialYaws.Remove(Grabber);
 
@@ -154,135 +142,105 @@ void UFurnitureGrabSystem::HandleMovement(float DeltaTime)
 	if (!GetOwner() || !GetOwner()->HasAuthority() || !FurnitureStat)
 		return;
 
-	// 이동제어할 총합
+	// 이동되어야할 총합
 	FVector CombinedDeltaLoc = FVector::ZeroVector;
 	float CombinedDeltaYaw = 0.0f;
 	
-	// 각 플레이어별 회전값 변화를 저장할 맵
+	// 각 플레이어가 가구에 요청한 개별 이동량을 저장할 맵
+	TMap<ACharacter*, FVector> PlayerDeltaLocs;
 	TMap<ACharacter*, float> PlayerDeltaYaws;
 
 	FVector OldFurnitureLoc = GetOwner()->GetActorLocation();
-	FRotator OldFurnitureRot = GetOwner()->GetActorRotation();
 
 	for (ACharacter* Player : GrabbedPlayers)
 	{
-		if (Player && InitialVectors.Contains(Player))
+		if (Player && PreviousPlayerLocations.Contains(Player) && PreviousPlayerYaws.Contains(Player) && InitialVectors.Contains(Player))
 		{
-			UCharacterMovementComponent* CMC = Player->GetCharacterMovement();
-			if (CMC)
-			{
-				// 이동 방향 (가속도 벡터의 정규화 사용)
-				FVector InputDir = CMC->GetCurrentAcceleration().GetSafeNormal();
+			// 현재 가구가 이동하여야할 양 계산
+			float CurrentYaw = Player->GetActorRotation().Yaw;
+			float PreviousYaw = PreviousPlayerYaws[Player];
+			float PlayerDeltaYaw = FMath::FindDeltaAngleDegrees(PreviousYaw, CurrentYaw);
 
-				// 캐릭터의 원래 최대 속도를 기준으로 미는 힘 결정
-				float PlayerPushPower = CMC->MaxWalkSpeed;
+			// 플레이어가 처음 잡았을 때와 지금까지 회전한 각도
+			float TotalYawChange = FMath::FindDeltaAngleDegrees(InitialYaws[Player], CurrentYaw);
 
-				// 가구중심에서 플레이어까지의 방향 벡터
-				FVector VectorFromCenter = Player->GetActorLocation() - OldFurnitureLoc;
-
-				// 직선 이동량 누적
-				CombinedDeltaLoc += InputDir * PlayerPushPower;
-
-				// 위치 벡터와 미는 힘 벡터의 외적의 Z성분 = 회전력
-				FVector Torque = FVector::CrossProduct(VectorFromCenter, InputDir * PlayerPushPower);
-				CombinedDeltaYaw += Torque.Z * 0.05f;
-
-				// 마우스 회전 입력 감지
-				float PlayerDeltaYaw = 0.0f;
-				if (PreviousControlYaws.Contains(Player))
-				{
-					float CurrentControlYaw = Player->GetControlRotation().Yaw;
-					float PreviousControlYaw = PreviousControlYaws[Player];
-					PlayerDeltaYaw = FMath::FindDeltaAngleDegrees(PreviousControlYaw, CurrentControlYaw);
-				}
-				PlayerDeltaYaws.Add(Player, PlayerDeltaYaw);
-
-				// 마우스 회전에 비례하는 회전 토크 계산 누적
-				CombinedDeltaYaw += PlayerDeltaYaw * PlayerPushPower * 10.0f;
-			}
-		}
-	}
-
-	// 가구의 무게와 마찰력세팅 (0 이하 예외 처리)
-	float FurnitureMass = FurnitureStat->GetMass();
-	if (FurnitureMass <= 0.0f) 
-		FurnitureMass = 200.0f;
-	float Friction = FurnitureStat->GetFriction();
-
-	// F = ma -> a = F / m
-	FVector Acceleration = CombinedDeltaLoc / FurnitureMass;
-	float YawAcceleration = CombinedDeltaYaw / FurnitureMass;
-
-	// 관성 및 속도 증가
-	CurrentVelocity += Acceleration * DeltaTime;
-	CurrentYawVelocity += YawAcceleration * DeltaTime;
-
-	// 마찰력 감속
-	CurrentVelocity = FMath::VInterpTo(CurrentVelocity, FVector::ZeroVector, DeltaTime, Friction);
-	CurrentYawVelocity = FMath::FInterpTo(CurrentYawVelocity, 0.0f, DeltaTime, Friction);
-
-	// 가구 실제 이동
-	FVector ActualDeltaLoc = CurrentVelocity * DeltaTime;
-	float ActualDeltaYaw = CurrentYawVelocity * DeltaTime;
-	FRotator TargetRotation = OldFurnitureRot;
-	TargetRotation.Yaw += ActualDeltaYaw;
-
-	// 가구를 새 위치와 각도로 이동
-	GetOwner()->SetActorLocationAndRotation(OldFurnitureLoc + ActualDeltaLoc, TargetRotation, true);
-
-	// 가구의 실제 회전량 (장애물 충돌 감안)
-	float RealDeltaYaw = FMath::FindDeltaAngleDegrees(OldFurnitureRot.Yaw, GetOwner()->GetActorRotation().Yaw);
-
-	// 플레이어 위치 및 회전 동기화
-	for (ACharacter* Player : GrabbedPlayers)
-	{
-		UCharacterMovementComponent* CMC = Player->GetCharacterMovement();
-		if (CMC && InitialVectors.Contains(Player) && InitialYaws.Contains(Player))
-		{
-			// 위치 보정
-			float TotalYawChange = FMath::FindDeltaAngleDegrees(InitialYaws[Player], TargetRotation.Yaw);
+			// 플레이어 회전에 영향받아 추가이동량
 			FVector CurrentVectorToFurniture = InitialVectors[Player].RotateAngleAxis(TotalYawChange, FVector::UpVector);
+			FVector DesiredFurnitureLoc = Player->GetActorLocation() + CurrentVectorToFurniture;
 
-			// 이상적인 위치 (가구와 처음 거리 유지)
-			FVector IdealLoc = GetOwner()->GetActorLocation() - CurrentVectorToFurniture;
+			FVector PlayerDeltaLoc = DesiredFurnitureLoc - OldFurnitureLoc;
+			
+			// 계산된 플레이어별 요청량을 맵에 저장
+			PlayerDeltaLocs.Add(Player, PlayerDeltaLoc);
+			PlayerDeltaYaws.Add(Player, PlayerDeltaYaw);
 
-			// 위치가 미세하게 어긋났을 때 당겨주는 고무줄 스프링 효과
-			FVector CorrectionVelocity = (IdealLoc - Player->GetActorLocation()) * 10.0f;
+			CombinedDeltaLoc += PlayerDeltaLoc;
+			CombinedDeltaYaw += PlayerDeltaYaw;
+		}
+	}
 
-			CMC->Velocity = CurrentVelocity + CorrectionVelocity;
+	int32 NumPlayers = GrabbedPlayers.Num();
+	if (NumPlayers > 0)
+	{
+		// 끌어당기는 인원수에 따른 이동속도 제어...일단은 이렇게하고 혹시모름
+		int32 Divider = NumPlayers;
 
-			// 플레이어 몸체 및 마우스 카메라 컨트롤러 회전각도 동기화 보정
-			if (PlayerDeltaYaws.Contains(Player))
+		FVector AverageDeltaLoc = CombinedDeltaLoc / Divider;
+		float AverageDeltaYaw = CombinedDeltaYaw / Divider;
+
+		FRotator OldFurnitureRot = GetOwner()->GetActorRotation();
+
+		// 이동해야할 위치
+		// 회전은 Yaw만 할거임
+		FVector TargetLocation = OldFurnitureLoc + AverageDeltaLoc;
+		FRotator TargetRotation = OldFurnitureRot;
+		TargetRotation.Yaw += AverageDeltaYaw;
+		
+		// 가구는 플레이어들의 평균 이동량만큼 이동
+		GetOwner()->SetActorLocationAndRotation(TargetLocation, TargetRotation, true);
+
+		// 가구가 벽에 부딪쳐서 이동하지 못한 경우의 실제 이동량 체크해보기
+		FVector ActualDeltaLoc = GetOwner()->GetActorLocation() - OldFurnitureLoc;
+		float ActualDeltaYaw = FMath::FindDeltaAngleDegrees(OldFurnitureRot.Yaw, GetOwner()->GetActorRotation().Yaw);
+
+		// 플레이어 이동시킴(실제 이동량으로 움직이게)
+		for (ACharacter* Player : GrabbedPlayers)
+		{
+			if (PlayerDeltaLocs.Contains(Player))
 			{
-				float YawCorrection = RealDeltaYaw - PlayerDeltaYaws[Player];
-				if (FMath::Abs(YawCorrection) > 0.01f)
+				// 내가 밀려고했던 만큼 가구가 못갔다면 그 차이만큼 강제로 이동시킴
+				FVector LocCorrection = ActualDeltaLoc - PlayerDeltaLocs[Player];
+				float YawCorrection = ActualDeltaYaw - PlayerDeltaYaws[Player];
+				if (!LocCorrection.IsNearlyZero(0.1f))
 				{
-					// 캐릭터 메시 회전 보정
-					Player->AddActorWorldRotation(FRotator(0.0f, YawCorrection, 0.0f));
-
-					// 카메라 마우스 컨트롤러 회전 보정 (화면 동기화)
-					if (AController* PC = Player->GetController())
-					{
-						FRotator ControlRot = PC->GetControlRotation();
-						ControlRot.Yaw += YawCorrection;
-						PC->SetControlRotation(ControlRot);
-					}
+					Player->AddActorWorldOffset(LocCorrection, true);
 				}
+				if (FMath::Abs(YawCorrection) > 0.1f)
+				{
+					Player->AddActorWorldRotation(FRotator(0.0f, YawCorrection, 0.0f));
+				}
+
+				// 로컬 클라이언트는 무브먼트의 고집이 꺾이게 하기위해 강제 위치/회전 브로드캐스트
+				//if (!LocCorrection.IsNearlyZero(0.1f) || FMath::Abs(YawCorrection) > 0.1f)
+				//{
+				//	Multicast_ForcePlayerPositionAndRotation(Player, Player->GetActorLocation(), Player->GetActorRotation().Yaw);
+				//}
 			}
 		}
 	}
 
-	// 위치 및 컨트롤러 회전 갱신 기록
+	// 모든 잡고 있는 플레이어의 위치기록
 	for (ACharacter* Player : GrabbedPlayers)
 	{
 		if (Player)
 		{
+			// 다음 연산을 위해 위치설정
 			PreviousPlayerLocations.Add(Player, Player->GetActorLocation());
-			PreviousControlYaws.Add(Player, Player->GetControlRotation().Yaw);
+			PreviousPlayerYaws.Add(Player, Player->GetActorRotation().Yaw);
 		}
 	}
 
-	// 서버에서 가구 최종 위치를 클라이언트에 전송할 변수에 복사
+	// 서버에서의 가구 최종 위치를 클라이언트 보간용 변수에 복사
 	ServerLocation = GetOwner()->GetActorLocation();
 	ServerRotation = GetOwner()->GetActorRotation();
 }
@@ -308,7 +266,7 @@ void UFurnitureGrabSystem::OnRep_GrabbedPlayers()
 			}
 		}
 	}
-	// 아무도 안잡게 되었을 경우
+	// 아무도 가구를 잡지 않았을 경우
 	else
 	{
 		if (FurnitureMesh)
@@ -355,14 +313,11 @@ void UFurnitureGrabSystem::UpdateClientInterpolation(float DeltaTime)
 
 void UFurnitureGrabSystem::Multicast_ForcePlayerPositionAndRotation_Implementation(ACharacter* PlayerToTarget, FVector LocToSet, float YawToSet)
 {
-	// 무브먼트 컴포넌트가 서버에서 적용한 회전을 개무시해서 수동으로 설정하기위함.
-	// 해당 캐릭터의 주인에게만 적용됨.
+	// 무브먼트 컴포넌트가 서버에서 전송한 회전을 무시하고 이동하므로 강제로 셋팅
 	if (PlayerToTarget && PlayerToTarget->IsLocallyControlled() && !GetOwner()->HasAuthority())
 	{
 		FRotator TargetRot = PlayerToTarget->GetActorRotation();
 		TargetRot.Yaw = YawToSet;
-		// 언리얼 무브먼트 컴포넌트의 고집을 뚫고 억지로 위치와 회전을 세팅
 		PlayerToTarget->SetActorLocationAndRotation(LocToSet, TargetRot, false, nullptr, ETeleportType::TeleportPhysics);
 	}
 }
-

@@ -72,14 +72,10 @@ private:
 
 private:
 
-	// 가구의 현재 이동속도와 회전속도
-	FVector CurrentVelocity = FVector::ZeroVector;
-	float CurrentYawVelocity = 0.0f;
-
 	// 플레이어의 이전 프레임 위치를 저장하여 이동량을 계산
 	// 어차피 서버에서 연산될거라 클라에서 확인할필요없어보여서 리플렉션x
 	TMap<ACharacter*, FVector> PreviousPlayerLocations;
-	TMap<ACharacter*, float> PreviousControlYaws;
+	TMap<ACharacter*, float> PreviousPlayerYaws;
 
 	// 가구를 최초로 잡은 순간의 절대적인 거리와 잣대 (파고듦 버그 방지)
 	TMap<ACharacter*, FVector> InitialVectors;
