@@ -35,13 +35,23 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Stage")
 	int32 TargetCountOverride = 0;
 
-	UPROPERTY(ReplicatedUsing = OnRep_Progress) int32 TargetCount = 0;
-	UPROPERTY(ReplicatedUsing = OnRep_Progress) int32 DeliveredCount = 0;
-	UPROPERTY(Replicated)                       int32 DamageCount = 0;
-	UPROPERTY(ReplicatedUsing = OnRep_Cleared)  bool  bStageCleared = false;
+	UPROPERTY(ReplicatedUsing = OnRep_Progress) 
+	int32 TargetCount = 0;
+	
+	UPROPERTY(ReplicatedUsing = OnRep_Progress) 
+	int32 DeliveredCount = 0;
+	
+	UPROPERTY(Replicated)                       
+	int32 DamageCount = 0;
+	
+	UPROPERTY(ReplicatedUsing = OnRep_Cleared)  
+	bool  bStageCleared = false;
 
-	UFUNCTION() void OnRep_Progress();
-	UFUNCTION() void OnRep_Cleared();
+	UFUNCTION() 
+	void OnRep_Progress();
+	
+	UFUNCTION() 
+	void OnRep_Cleared();
 
 private:
 	int32 CountFurnitureInLevel() const;
