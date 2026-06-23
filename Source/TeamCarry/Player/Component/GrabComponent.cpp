@@ -1,4 +1,5 @@
-﻿// GrabComponent.cpp
+﻿
+// GrabComponent.cpp
 
 #include "Player/Component/GrabComponent.h"
 #include "Player/Character/TCPlayerCharacter.h"
@@ -60,7 +61,7 @@ void UGrabComponent::ScanBestTarget()
 	bool bHit = UKismetSystemLibrary::BoxTraceMulti(
 		this, Start, End, HalfSize, OwnerActor->GetActorRotation(),
 		UEngineTypes::ConvertToTraceType(ECC_Visibility),
-		false, ActorsToIgnore, EDrawDebugTrace::None, // 디버그 선을 보려면 ForDuration으로 변경
+		false, ActorsToIgnore, EDrawDebugTrace::ForOneFrame, // 디버그 선 보려면 수정(None, ForOneFrame)
 		HitResults, true
 	);
 
