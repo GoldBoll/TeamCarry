@@ -57,3 +57,8 @@ void AFurnitureActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
+
+void AFurnitureActor::SetHighlight(bool bEnabled)
+{
+	// 지금은 더미임
+}

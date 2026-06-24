@@ -46,6 +46,15 @@ public:
 	// 초기화 시 호출 (가구 본체에서 넘겨줌)
 	void Setup(UStaticMeshComponent* InMesh, UFurnitureStat* InStat);
 
+	// === 외부 상호작용(인터페이스 어댑터)용 조회 헬퍼 ===
+	// 이 플레이어가 지금 이 가구를 잡고 있는가 (놓기/잡기 토글 판정용)
+	UFUNCTION(BlueprintPure, Category = "Interaction")
+	bool IsGrabbedBy(ACharacter* Player) const { return Player != nullptr && GrabbedPlayers.Contains(Player); }
+
+	// 정원이 아직 차지 않아 더 잡을 수 있는가
+	UFUNCTION(BlueprintPure, Category = "Interaction")
+	bool CanAcceptGrab() const;
+
 protected:
 	virtual void BeginPlay() override;
 

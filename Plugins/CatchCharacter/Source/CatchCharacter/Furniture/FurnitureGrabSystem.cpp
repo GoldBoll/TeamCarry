@@ -86,6 +86,14 @@ void UFurnitureGrabSystem::Setup(UStaticMeshComponent* InMesh, UFurnitureStat* I
 	FurnitureStat = InStat;
 }
 
+bool UFurnitureGrabSystem::CanAcceptGrab() const
+{
+	// 스텟이 없으면 판단 불가 -> 막아둔다. 잡은 인원이 요구 인원보다 적으면 더 받을 수 있다.
+	if (!FurnitureStat)
+		return false;
+	return GrabbedPlayers.Num() < FurnitureStat->GetRequiredPlayer();
+}
+
 void UFurnitureGrabSystem::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -154,22 +162,7 @@ void UFurnitureGrabSystem::Grab(ACharacter* Grabber, FVector height, UPrimitiveC
 		ServerRotation = Owner->GetActorRotation();
 	}
 
-	// === 잡는 순간 가구를 바라보도록 1회 정렬 (이후 회전은 자유) ===
-	{
-		FVector ToFurniture = Owner->GetActorLocation() - Grabber->GetActorLocation();
-		ToFurniture.Z = 0.0f;
-		if (!ToFurniture.IsNearlyZero())
-		{
-			const FRotator Facing(0.0f, ToFurniture.Rotation().Yaw, 0.0f);
-			Grabber->SetActorRotation(Facing);
-			if (AController* Controller = Grabber->GetController())
-			{
-				Controller->SetControlRotation(Facing);
-			}
-		}
-	}
-
-	// 잡은 플레이어 등록
+	// 잡은 플레이어 등록 (잡는 순간 가구를 바라보게 하는 정렬은 의도적으로 하지 않는다 - 카메라 강제 회전 방지)
 	GrabbedPlayers.Add(Grabber);
 
 	// 추종 기준값 기록: 잡은 순간의 상대 위치(가구-플레이어)와 양측 Yaw 를 절대 기준으로 저장.

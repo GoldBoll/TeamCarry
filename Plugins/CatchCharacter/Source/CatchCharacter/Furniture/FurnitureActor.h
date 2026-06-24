@@ -39,9 +39,17 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Furniture|Setup")
 	FDataTableRowHandle FurnitureDataRow;
 
-public:	
+	// 첫 그랩 시 가구를 살짝 들어올리는 오프셋 (인터페이스 어댑터의 Grab 호출에 넘김)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Furniture|Setup")
+	FVector GrabLiftHeight = FVector(0.0f, 0.0f, 40.0f);
+
+public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFurnitureGrabSystem* GetGrabSystem() const { return GrabSystem; }
 	UFurnitureStat* GetFurnitureStat() const { return FurnitureStat; }
+
+	// 외곽선 하이라이트 (현재는 더미데이터)
+	UFUNCTION(BlueprintCallable, Category = "Furniture")
+	void SetHighlight(bool bEnabled);
 };
