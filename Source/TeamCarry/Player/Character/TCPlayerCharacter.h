@@ -87,9 +87,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "TCPlayerCharacter|Input")
 	TObjectPtr<UInputAction> RunAction;
 
-	// 상호작용 - 잡기 액션
+	// 상호작용(E) - 잡기 액션
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "TCPlayerCharacter|Input")
 	TObjectPtr<UInputAction> InteractAction;
+
+	// 상호작용(F) - 던지기 액션
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "TCPlayerCharacter|Input")
+	TObjectPtr<UInputAction> ThrowAction;
 
 private:
 	// 달리기 시작/종료 처리
@@ -104,8 +108,32 @@ private:
 	UFUNCTION(Server, Reliable)
 	void ServerStopRun();
 
-	// 상호작용 입력 처리
+	// 상호작용 - 잡기 입력 처리
 	void Interact(const FInputActionValue& InValue);
+
+	//  상호작용 - 던지기 입력 처리
+	void Throw(const FInputActionValue& InValue);
 #pragma endregion
 
+#pragma region Animation
+
+protected:
+	// 잡기 애니메이션 몽타주
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "TCPlayerCharacter|Animation")
+	TObjectPtr<UAnimMontage> GrabMontage;
+
+	// 던지기 애니메이션 몽타주
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "TCPlayerCharacter|Animation")
+	TObjectPtr<UAnimMontage> ThrowMontage;
+
+	// 서버에게 애니메이션 재생을 요청하는 RPC 함수
+	UFUNCTION(Server, Reliable)
+	void ServerPlayActionMontage(int32 ActionID);
+
+	// 서버가 클라이언트에게 애니메이션을 재생하라고 방송하는 RPC 함수
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastPlayActionMontage(int32 ActionID);
+
+
+#pragma endregion
 };

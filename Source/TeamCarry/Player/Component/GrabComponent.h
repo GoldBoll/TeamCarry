@@ -26,12 +26,20 @@ public:
 	// 캐릭터가 상호작용 키(E)를 눌렀을 때 호출할 함수
 	void TryInteract();
 
+	// 캐릭터가 던지기 키(F)를 눌렀을 때 호출할 함수
+	void TryThrow();
+
 private:
 	// 매 프레임 전방을 스캔하여 BestTarget을 찾는 함수
 	void ScanBestTarget();
 	
 protected:
-	// 서버에 상호작용을 요청하는 RPC 함수
+	// 서버에 상호작용-잡기를 요청하는 RPC 함수
 	UFUNCTION(Server, Reliable)
 	void ServerTryInteract(AActor* TargetActor);
+
+	// 서버에 상호작용-던지기를 요청하는 RPC 함수
+	UFUNCTION(Server, Reliable)
+	void ServerTryThrow();
+
 };
