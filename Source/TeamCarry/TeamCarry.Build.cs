@@ -13,8 +13,8 @@ public class TeamCarry : ModuleRules
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
         PublicIncludePaths.AddRange(new string[] 
-        {
-      
+        { 
+            "TeamCarry",
         });
 
         // Uncomment if you are using Slate UI
