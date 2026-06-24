@@ -12,10 +12,10 @@ public class TeamCarry : ModuleRules
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
-        PublicIncludePaths.AddRange(new string[] 
-        {
-      
-        });
+        // 모듈 루트(Source/TeamCarry)를 include 경로에 추가.
+        // V7 빌드 세팅 + flat 레이아웃에서는 모듈 루트가 자동 등록되지 않아
+        // "Level/Struct/BreakableProp.h" 같은 모듈루트 기준 include가 실패한다.
+        PublicIncludePaths.Add(ModuleDirectory);
 
         // Uncomment if you are using Slate UI
         // PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
