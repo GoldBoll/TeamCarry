@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+﻿// TitleWidget.h
 
 #pragma once
 
@@ -14,6 +14,10 @@ UCLASS()
 class TEAMCARRY_API UTitleWidget : public UUserWidget
 {
 	GENERATED_BODY()
+
+public: 
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void InitializeKeyboardFocus();
 
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI|Title")

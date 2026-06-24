@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "SettingWidget.generated.h"
+#include "O_Settings.generated.h"
 
 class UButton;
 class UCheckBox;
@@ -15,7 +15,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSettingAction);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSettingVolumeChanged, float, Value);
 
 UCLASS()
-class TEAMCARRY_API USettingWidget : public UUserWidget
+class TEAMCARRY_API UO_Settings : public UUserWidget
 {
 	GENERATED_BODY()
 

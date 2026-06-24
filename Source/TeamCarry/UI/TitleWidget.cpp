@@ -1,4 +1,5 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+﻿// TitleWidget.cpp
+
 
 #include "TeamCarry/UI/TitleWidget.h"
 
@@ -55,7 +56,7 @@ void UTitleWidget::NativeConstruct()
 	SetIsFocusable(true);
 	if (APlayerController* PC = GetOwningPlayer())
 	{
-		UWidgetBlueprintLibrary::SetInputMode_UIOnlyEx(PC, this);
+		UWidgetBlueprintLibrary::SetInputMode_UIOnlyEx(PC, this, EMouseLockMode::DoNotLock, false);
 		PC->SetShowMouseCursor(true);
 	}
 }
@@ -175,5 +176,13 @@ void UTitleWidget::OpenCharacterSelect()
 	else
 	{
 		UGameplayStatics::OpenLevel(this, FName("CharacterSelect"));
+	}
+}
+
+void UTitleWidget::InitializeKeyboardFocus()
+{
+	if (GameStartButton)
+	{
+		GameStartButton->SetKeyboardFocus();
 	}
 }
