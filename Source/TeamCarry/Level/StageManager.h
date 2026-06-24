@@ -29,6 +29,8 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Stage")
 	FOnStageProgress OnStageProgress;
 
+	void UnregisterDelivery(AActor* Furniture);
+
 protected:
 	virtual void BeginPlay() override;
 
