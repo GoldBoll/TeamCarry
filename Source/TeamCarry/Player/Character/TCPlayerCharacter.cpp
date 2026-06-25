@@ -63,6 +63,7 @@ void ATCPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	EIC->BindAction(RunAction, ETriggerEvent::Completed, this, &ThisClass::StopRun);
 	EIC->BindAction(InteractAction, ETriggerEvent::Started, this, &ThisClass::Interact);
 	EIC->BindAction(ThrowAction, ETriggerEvent::Started, this, &ThisClass::Throw);
+	EIC->BindAction(ToggleViewAction, ETriggerEvent::Started, this, &ThisClass::ToggleView);
 
 }
 
@@ -210,6 +211,28 @@ void ATCPlayerCharacter::Throw(const FInputActionValue& InValue)
 		// 상호작용-던지기 실행 명령
 		GrabComponent->TryThrow();
 	}	
+}
+
+// 카메라 시점 변환 함수
+void ATCPlayerCharacter::ToggleView(const FInputActionValue& InValue)
+{
+	if (!SpringArm) return;
+
+	// 상태 반전 (true -> false, false -> true)
+	bIsFirstPerson = !bIsFirstPerson;
+
+	if (bIsFirstPerson)
+	{
+		// 1인칭: 스프링암 길이를 0으로 만들고 높이를 캐릭터 눈높이(약 65)로 올림
+		SpringArm->TargetArmLength = 0.f;
+		SpringArm->SocketOffset = FVector(30.f, 0.f, 65.f);
+	}
+	else
+	{
+		// 3인칭: 원래 길이와 위치로 복구
+		SpringArm->TargetArmLength = 400.f;
+		SpringArm->SocketOffset = FVector::ZeroVector;
+	}
 }
 
 // 애니메이션 전체 클라이언트 동기화
