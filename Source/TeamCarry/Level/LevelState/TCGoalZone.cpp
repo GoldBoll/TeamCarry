@@ -76,3 +76,20 @@ void ATCGoalZone::CheckArrivals()
 		}
 	}
 }
+
+void ATCGoalZone::OnFurnitureStolen(AActor* Furniture)
+{
+	if (!HasAuthority()) return;
+	Delivered.Remove(Furniture);   
+	InZone.Remove(Furniture);
+	if (StageManager) { StageManager->UnregisterDelivery(Furniture); }
+}
+
+AActor* ATCGoalZone::GetAnyDeliveredFurniture() const
+{
+	for (const TObjectPtr<AActor>& Furniture : Delivered)
+	{
+		if (Furniture) { return Furniture; }
+	}
+	return nullptr;
+}

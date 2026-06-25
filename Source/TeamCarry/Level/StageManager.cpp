@@ -71,5 +71,16 @@ void AStageManager::EvaluateClear()
 	}
 }
 
+void AStageManager::UnregisterDelivery(AActor* Furniture)
+{
+	if (!HasAuthority()) return;
+	if (bStageCleared) return;            
+	if (DeliveredCount <= 0) return;
+
+	DeliveredCount -= 1;
+	OnStageProgress.Broadcast(DeliveredCount, TargetCount);
+}
+
 void AStageManager::OnRep_Progress() { OnStageProgress.Broadcast(DeliveredCount, TargetCount); }
 void AStageManager::OnRep_Cleared() { /* 클라 결과 UI 트리거 */ }
+
