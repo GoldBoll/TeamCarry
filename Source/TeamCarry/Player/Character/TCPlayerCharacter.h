@@ -124,6 +124,9 @@ private:
 	// 시점 전환 입력 처리
 	void ToggleView(const FInputActionValue& InValue);
 
+	// 점프 입력 처리
+	void TryJump();
+
 #pragma endregion
 
 #pragma region Animation

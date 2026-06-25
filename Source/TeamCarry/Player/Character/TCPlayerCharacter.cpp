@@ -2,8 +2,11 @@
 
 
 #include "Player/Character/TCPlayerCharacter.h"
-
 #include "Player/Component/GrabComponent.h"
+
+#include "Furniture/TCFurnitureActor.h"
+#include "CatchCharacter/Furniture/FurnitureGrabSystem.h"
+
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -57,7 +60,7 @@ void ATCPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	// 각 입력 액션 바인딩
 	EIC->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ThisClass::HandleMoveInput);
 	EIC->BindAction(LookAction, ETriggerEvent::Triggered, this, &ThisClass::HandleLookInput);
-	EIC->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
+	EIC->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ThisClass::TryJump);
 	EIC->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 	EIC->BindAction(RunAction, ETriggerEvent::Started, this, &ThisClass::StartRun);
 	EIC->BindAction(RunAction, ETriggerEvent::Completed, this, &ThisClass::StopRun);
@@ -134,6 +137,32 @@ void ATCPlayerCharacter::HandleLookInput(const FInputActionValue& InValue)
 // 플레이어 달리기 시작
 void ATCPlayerCharacter::StartRun(const FInputActionValue& InValue)
 {
+	// 가구를 들고 있는지 확인
+	if (GrabComponent && GrabComponent->GetGrabbedActor())
+	{
+		ATCFurnitureActor* Furniture = Cast<ATCFurnitureActor>(GrabComponent->GetGrabbedActor());
+
+		if (Furniture)
+		{
+			UFurnitureGrabSystem* FGS = Furniture->GetGrabSystem();
+
+			if (FGS)
+			{
+				// GrabbedPlayers 배열의 길이를 확인하여 잡고 있는 인원수 산출
+				int32 GrabberCount = FGS->IsGrabbedBy(this) ? 1 : 0;
+
+				// 팀원 코드에 맞춰 잡고 있는 인원수를 가져오는 함수로 수정 필요
+				//int32 GrabberCount = FGS->GetGrabbedPlayers().Num();
+
+				// 2명 이상이 가구를 들고 있다면 달리기 불가 처리 후 함수 종료
+				/*if (GrabberCount >= 2)
+				{
+					return;
+				}*/
+			}
+		}
+	}
+
 	// 달리기 최대 속도 500
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 
@@ -233,6 +262,18 @@ void ATCPlayerCharacter::ToggleView(const FInputActionValue& InValue)
 		SpringArm->TargetArmLength = 400.f;
 		SpringArm->SocketOffset = FVector::ZeroVector;
 	}
+}
+
+// 점프 함수
+void ATCPlayerCharacter::TryJump()
+{
+	// 가구를 들고 있다면 점프 불가 처리 후 함수 종료
+	if (GrabComponent && GrabComponent->GetGrabbedActor())
+	{
+		return;
+	}
+
+	Super::Jump();
 }
 
 // 애니메이션 전체 클라이언트 동기화
