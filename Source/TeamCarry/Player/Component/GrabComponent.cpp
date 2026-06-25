@@ -1,4 +1,5 @@
-﻿// GrabComponent.cpp
+﻿
+// GrabComponent.cpp
 
 #include "Player/Component/GrabComponent.h"
 #include "Player/Character/TCPlayerCharacter.h"
@@ -27,7 +28,7 @@ void UGrabComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 }
 
-// 대상이 존재하면 서버로 상호작용 시도 요청
+// 대상이 존재하면 서버로 상호작용-잡기 시도 요청
 void UGrabComponent::TryInteract()
 {
 	// 현재 내 화면에 잡힌 타겟이 있다면 서버로 해당 타겟을 전송
@@ -35,6 +36,14 @@ void UGrabComponent::TryInteract()
 	{
 		ServerTryInteract(CurrentBestTarget);
 	}
+}
+
+// 서버로 상호작용-던지기 시도 요청
+void UGrabComponent::TryThrow()
+{
+	// 나중에 가구 액터가 들어오면 TryInteract()처럼 if문 추가하고 수정할 예정
+	// 지금은 뼈대만 설계해서 바로 서버로 던지기 요청
+	ServerTryThrow();
 }
 
 // 멀티 박스 트레이스 발사해서 최적 대상 판별
@@ -60,7 +69,7 @@ void UGrabComponent::ScanBestTarget()
 	bool bHit = UKismetSystemLibrary::BoxTraceMulti(
 		this, Start, End, HalfSize, OwnerActor->GetActorRotation(),
 		UEngineTypes::ConvertToTraceType(ECC_Visibility),
-		false, ActorsToIgnore, EDrawDebugTrace::None, // 디버그 선을 보려면 ForDuration으로 변경
+		false, ActorsToIgnore, EDrawDebugTrace::ForOneFrame, // 디버그 선 보려면 수정(None, ForOneFrame)
 		HitResults, true
 	);
 
@@ -119,7 +128,15 @@ void UGrabComponent::ScanBestTarget()
 	}
 }
 
-// Server - 상호작용 실행
+// Server - 상호작용-던지기 실행
+void UGrabComponent::ServerTryThrow_Implementation()
+{
+	// 나중에 가구와 연결되면 수정할 예정
+	// 전방으로 AddImpulse(힘)을 가해서 날리는 로직 작성할 예정
+	UE_LOG(LogTemp, Warning, TEXT("[Server] 던지기 실행 준비 완료"));
+}
+
+// Server - 상호작용-잡기 실행
 void UGrabComponent::ServerTryInteract_Implementation(AActor* TargetActor)
 {
 	// 서버 검증
