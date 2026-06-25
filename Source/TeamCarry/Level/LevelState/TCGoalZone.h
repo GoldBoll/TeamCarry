@@ -46,4 +46,10 @@ private:
 	TSet<TObjectPtr<AActor>> Delivered;  // 이미 카운트됨
 	
 	FTimerHandle CheckTimer;
+
+public:
+	void OnFurnitureStolen(AActor* Furniture);
+
+	UFUNCTION(BlueprintCallable, Category = "Goal")
+	AActor* GetAnyDeliveredFurniture() const;
 };
