@@ -61,3 +61,17 @@ void ABreakableProp::OnRep_DamageLevel()
 	OnDamageChanged(DamageLevel);
 }
 
+void ABreakableProp::ApplyDamage_Implementation(int32 Amount, AActor* /*Instigator*/)
+{
+	if (!HasAuthority() || DamageLevel >= MaxDamageLevel) return;
+
+	DamageLevel = FMath::Clamp(DamageLevel + Amount, 0, MaxDamageLevel);
+	OnDamageChanged(DamageLevel);
+
+	// 파손 집계도 동일하게 (물리 파손과 통일)
+	if (AStageManager* SM = Cast<AStageManager>(
+		UGameplayStatics::GetActorOfClass(this, AStageManager::StaticClass())))
+	{
+		SM->RegisterDamage(this);
+	}
+}
