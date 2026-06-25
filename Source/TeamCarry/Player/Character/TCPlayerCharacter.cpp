@@ -62,6 +62,7 @@ void ATCPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	EIC->BindAction(RunAction, ETriggerEvent::Started, this, &ThisClass::StartRun);
 	EIC->BindAction(RunAction, ETriggerEvent::Completed, this, &ThisClass::StopRun);
 	EIC->BindAction(InteractAction, ETriggerEvent::Started, this, &ThisClass::Interact);
+	EIC->BindAction(ThrowAction, ETriggerEvent::Started, this, &ThisClass::Throw);
 
 }
 
@@ -151,7 +152,7 @@ void ATCPlayerCharacter::StopRun(const FInputActionValue& InValue)
 
 }
 
-// 상호작용 - 잡기
+// 상호작용(E키) - 잡기
 void ATCPlayerCharacter::Interact(const FInputActionValue& InValue)
 {
 	// 유효성 검사
@@ -166,9 +167,75 @@ void ATCPlayerCharacter::Interact(const FInputActionValue& InValue)
 		// 출력 로그
 		UE_LOG(LogTemp, Warning, TEXT("E키 입력 : 가구 잡기 시도"));
 
-		// 상호작용 실행 명령
+		// 애니메이션 재생
+		if (GrabMontage)
+		{
+			// 로컬 애니메이션 재생
+			PlayAnimMontage(GrabMontage);
+			
+			// 서버에 애니메이션 전송
+			ServerPlayActionMontage(0);
+		}
+
+		// 상호작용-잡기 실행 명령
 		GrabComponent->TryInteract();
 	}
+}
+
+// 상호작용(F키) - 던지기
+void ATCPlayerCharacter::Throw(const FInputActionValue& InValue)
+{
+	// 유효성 검사
+	if (GrabComponent)
+	{
+		// 뷰포트에 로그 출력
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, TEXT("F키 입력 : 가구 던지기 시도"));
+		}
+
+		// 출력 로그
+		UE_LOG(LogTemp, Warning, TEXT("F키 입력 : 가구 던지기 시도"));
+
+		// 애니메이션 재생
+		if (ThrowMontage)
+		{
+			// 로컬 애니메이션 재생
+			PlayAnimMontage(ThrowMontage);
+
+			// 서버에 애니메이션 전송
+			ServerPlayActionMontage(1);
+		}
+
+		// 상호작용-던지기 실행 명령
+		GrabComponent->TryThrow();
+	}	
+}
+
+// 애니메이션 전체 클라이언트 동기화
+void ATCPlayerCharacter::MulticastPlayActionMontage_Implementation(int32 ActionID)
+{
+	// 중복 재생 방지
+	// 내가 조종 중인 캐릭터가 아닐 때(남의 화면에서 볼 때)만 애니메이션을 덮어씌워 재생
+	if (!IsLocallyControlled())
+	{
+		// 전달받은 ID에 따라 각자의 PC에 세팅된 몽타주를 안전하게 재생
+		if (ActionID == 0 && GrabMontage)
+		{
+			PlayAnimMontage(GrabMontage);
+		}
+		else if (ActionID == 1 && ThrowMontage)
+		{
+			PlayAnimMontage(ThrowMontage);
+		}
+	}
+}
+
+// Server - 애니메이션 재생 요청 수신 및 전파
+void ATCPlayerCharacter::ServerPlayActionMontage_Implementation(int32 ActionID)
+{
+	// 서버가 요청 받는 즉시 모든 사람(Multicast)에게 전파
+	MulticastPlayActionMontage(ActionID);
 }
 
 // Server - 달리기 종료

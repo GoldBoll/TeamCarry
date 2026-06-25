@@ -17,7 +17,12 @@ public:
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
 protected:
-	// 블루프린트에 캐릭터 이동 속도 등록
+	// 캐릭터 이동 속도
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	float Speed;
+
+	// 캐릭터가 공중에 떠 있는지 여부
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
+	bool bIsFalling;
+
 };
